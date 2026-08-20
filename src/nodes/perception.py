@@ -1,11 +1,13 @@
 import os
 import logging
+from typing import Optional
 import litellm
 from src.core.state import ProjectState
+from src.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-def classify_user_intent(prompt: str, model_name: str = "gpt-4o") -> str:
+def classify_user_intent(prompt: str, model_name: Optional[str] = None) -> str:
     """
     Classifies the user prompt into DECOMPOSE, RESEARCH, CODE, or CRITIC.
     Falls back to heuristic analysis if no API key is present.
@@ -42,8 +44,9 @@ def classify_user_intent(prompt: str, model_name: str = "gpt-4o") -> str:
     )
 
     try:
+        target_model = model_name or settings.LITELLM_MODEL
         response = litellm.completion(
-            model=model_name,
+            model=target_model,
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": prompt}

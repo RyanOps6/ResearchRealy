@@ -65,7 +65,7 @@ Deliverable: A persistent state machine using LangGraph and PostgreSQL checkpoin
 ## Phase 2: AST-Driven Code RAG Engine
 Deliverable: Local repository indexing and hybrid search (dense embeddings + sparse lexical matching) powered by Qdrant.
 
-### [ ] TSK-005: Tree-sitter AST Parser
+### [x] TSK-005: Tree-sitter AST Parser
 - **Dependency:** `TSK-001`
 - **Target Files:**
   - [NEW] [`src/rag/ast_parser.py`](file:///e:/TA/src/rag/ast_parser.py)

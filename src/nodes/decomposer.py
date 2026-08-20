@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 import litellm
 from src.core.state import TaskItem, ProjectState
+from src.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ def mock_decomposition(prompt: str) -> List[TaskItem]:
         )
     ]
 
-def decompose_task_prompt(prompt: str, model_name: str = "gpt-4o") -> List[TaskItem]:
+def decompose_task_prompt(prompt: str, model_name: Optional[str] = None) -> List[TaskItem]:
     """
     Invokes LLM via litellm to decompose the developer prompt into TaskItems.
     Falls back to mock_decomposition if no API keys are found.
@@ -107,8 +108,9 @@ def decompose_task_prompt(prompt: str, model_name: str = "gpt-4o") -> List[TaskI
     )
 
     try:
+        target_model = model_name or settings.LITELLM_MODEL
         response = litellm.completion(
-            model=model_name,
+            model=target_model,
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": prompt}

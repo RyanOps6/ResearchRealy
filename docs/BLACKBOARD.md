@@ -10,6 +10,16 @@
 ## 2. Change Event Stream (Append-Only Log)
 > *Every agent MUST append its change summary here immediately after making edits.*
 
+### [2026-08-19 18:46] — Task: TSK-005 (Tree-sitter AST Parser)
+- **Agent:** `Antigravity (Lead Architect & Core Engineer)`
+- **Files Created:**
+  - `src/rag/ast_parser.py` (Implemented Python AST node traverser extracting classes, methods, and contiguous module-level global code)
+  - `tests/test_ast.py` (Implemented unit tests compiling code, running parser, and validating CodeReference metadata offsets/snippets)
+- **Exported Symbols / Interfaces:**
+  - `parse_python_file(file_path)` -> List of `CodeReference` objects
+- **Important Notes:**
+  - Installed `tree-sitter==0.21.3` and `tree-sitter-languages==1.10.2` in requirements.txt. Using precompiled language bindings resolves compiler build constraints on Windows development environments.
+
 ### [2026-08-19 11:34] — Task: TSK-004 (CLI Interface & Resume Engine)
 - **Agent:** `Antigravity (Lead Architect & Core Engineer)`
 - **Files Created:**
