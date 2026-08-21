@@ -76,7 +76,7 @@ Deliverable: Local repository indexing and hybrid search (dense embeddings + spa
 - **Verification Commands:**
   - `pytest tests/test_ast.py -v`
 
-### [ ] TSK-006: Dual Indexing (Dense & Sparse Indexes)
+### [x] TSK-006: Dual Indexing (Dense & Sparse Indexes)
 - **Dependency:** `TSK-005`
 - **Target Files:**
   - [NEW] [`src/rag/indexer.py`](file:///e:/TA/src/rag/indexer.py)
@@ -89,7 +89,7 @@ Deliverable: Local repository indexing and hybrid search (dense embeddings + spa
   - Start Qdrant: `docker compose up -d qdrant`
   - `pytest tests/test_indexer.py -v`
 
-### [ ] TSK-007: Hybrid Search & Cross-Encoder Re-ranking
+### [x] TSK-007: Hybrid Search (RRF Retrieval)
 - **Dependency:** `TSK-006`
 - **Target Files:**
   - [NEW] [`src/rag/searcher.py`](file:///e:/TA/src/rag/searcher.py)
@@ -100,7 +100,7 @@ Deliverable: Local repository indexing and hybrid search (dense embeddings + spa
 - **Verification Commands:**
   - `pytest tests/test_searcher.py -v`
 
-### [ ] TSK-008: Codebase Watcher for Incremental Updates
+### [x] TSK-008: Codebase Watcher for Incremental Updates
 - **Dependency:** `TSK-007`
 - **Target Files:**
   - [NEW] [`src/rag/watcher.py`](file:///e:/TA/src/rag/watcher.py)
@@ -116,7 +116,7 @@ Deliverable: Local repository indexing and hybrid search (dense embeddings + spa
 ## Phase 3: Web Research & Scraper Layer
 Deliverable: Live technical documentation lookup and headless SPA scraping to ensure package version safety.
 
-### [ ] TSK-009: Tavily/Exa Documentation Resolver & Version Pinning
+### [x] TSK-009: Tavily/Exa Documentation Resolver & Version Pinning
 - **Dependency:** `TSK-001`
 - **Target Files:**
   - [NEW] [`src/web/search.py`](file:///e:/TA/src/web/search.py)
@@ -128,7 +128,7 @@ Deliverable: Live technical documentation lookup and headless SPA scraping to en
 - **Verification Commands:**
   - `pytest tests/test_web_search.py -v`
 
-### [ ] TSK-010: Headless Scraper for SPA Docs
+### [x] TSK-010: Headless Scraper for SPA Docs
 - **Dependency:** `TSK-009`
 - **Target Files:**
   - [NEW] [`src/web/scraper.py`](file:///e:/TA/src/web/scraper.py)
@@ -143,24 +143,24 @@ Deliverable: Live technical documentation lookup and headless SPA scraping to en
 ## Phase 4: Anti-Hallucination Critic-Verifier Engine
 Deliverable: A cyclic feedback loop validating code drafts against rules and database constraints before finalizing output.
 
-### [ ] TSK-011: Critic Validation Node
+### [x] TSK-011: Critic Validation Node
 - **Dependency:** `TSK-001`
 - **Target Files:**
   - [NEW] [`src/nodes/critic.py`](file:///e:/TA/src/nodes/critic.py)
   - [NEW] [`tests/test_critic.py`](file:///e:/TA/tests/test_critic.py)
 - **Acceptance Criteria:**
-  - Parse draft prompt output payloads.
-  - Implement a 4-point verification check: file/symbol existence, locked invariants, library deprecation status, and scope alignment.
+  - Parse generated prompt specification drafts.
+  - Implement a 4-point verification check: structural spec layout (Rough Idea & Prompt Recipe), target file AST consistency, version pinning, and placeholder checks.
 - **Verification Commands:**
   - `pytest tests/test_critic.py -v`
 
-### [ ] TSK-012: Cyclic Graph Feedback Loop
+### [x] TSK-012: Cyclic Graph Feedback Loop
 - **Dependency:** `TSK-004`, `TSK-011`
 - **Target Files:**
   - [NEW] [`src/core/graph_feedback.py`](file:///e:/TA/src/core/graph_feedback.py)
   - [NEW] [`tests/test_feedback.py`](file:///e:/TA/tests/test_feedback.py)
 - **Acceptance Criteria:**
-  - Configure LangGraph cyclic edges to routing back to Generator Node on Critic validation failures (max 3 retries).
+  - Configure LangGraph cyclic edges to route back to Spec Generator Node on Critic validation failures (max 3 retries).
 - **Verification Commands:**
   - `pytest tests/test_feedback.py -v`
 

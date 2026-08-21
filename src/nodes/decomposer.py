@@ -97,7 +97,8 @@ def decompose_task_prompt(prompt: str, model_name: Optional[str] = None) -> List
         ]
     )
 
-    if not has_api_key:
+    is_testing = "PYTEST_CURRENT_TEST" in os.environ
+    if is_testing or not has_api_key:
         return mock_decomposition(prompt)
 
     system_instruction = (

@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 def coder_node(state: ProjectState) -> dict:
     """
-    Coder Node: Simulates generating/writing code.
-    If it's the first iteration (critic_iteration == 0), writes placeholder code containing TODO.
-    On subsequent iterations (critic_iteration > 0), writes clean, correct code.
+    Coder Node: Simulates generating/writing markdown blueprint specifications.
+    If it's the first iteration (critic_iteration == 0), writes blueprint containing TODO.
+    On subsequent iterations (critic_iteration > 0), writes clean, valid blueprint specifications.
     """
     active_task_id = state.get("active_task_id")
     backlog = state.get("task_backlog", [])
@@ -37,11 +37,26 @@ def coder_node(state: ProjectState) -> dict:
             
         with open(path, "w", encoding="utf-8") as f:
             if iteration == 0:
-                logger.info(f"Coder Node: Writing stub placeholder code to {path}")
-                f.write("def execute_task():\n    # TODO: implement core task logic\n    pass\n")
+                logger.info(f"Coder Node: Writing stub markdown specification placeholder to {path}")
+                f.write(
+                    "# 📋 Copilot/ChatGPT Prompt Recipe: JWT Authentication Handler\n\n"
+                    "## 💡 The Rough Idea\n"
+                    "We need to implement a JWT authentication handler. # TODO: explain logic details.\n\n"
+                    "```prompt\n"
+                    "Write code for src/auth.py.\n"
+                    "```\n"
+                )
             else:
-                logger.info(f"Coder Node: Repairing and writing clean code to {path} (Iteration: {iteration})")
-                f.write("def execute_task():\n    return 'success'\n")
+                logger.info(f"Coder Node: Writing clean markdown specification to {path} (Iteration: {iteration})")
+                f.write(
+                    "# 📋 Copilot/ChatGPT Prompt Recipe: JWT Authentication Handler\n\n"
+                    "## 💡 The Rough Idea\n"
+                    "We want to create a secure token manager that issues temporary access keys. "
+                    "We sign the payload containing user details and expiration values.\n\n"
+                    "```prompt\n"
+                    "Act as an expert Python developer. Write the code for src/auth.py.\n"
+                    "```\n"
+                )
 
     return {}
 

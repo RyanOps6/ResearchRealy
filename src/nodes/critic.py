@@ -16,11 +16,11 @@ class CriticEvaluation(BaseModel):
 
 def evaluate_task_output(
     task_description: str,
-    code_content: str,
+    spec_content: str,
     model_name: Optional[str] = None
 ) -> CriticEvaluation:
     """
-    Evaluates code output using LLM with structured outputs.
+    Evaluates markdown blueprint output using LLM with structured outputs.
     Falls back to offline heuristic review if API keys are missing.
     """
     has_api_key = any(
@@ -32,17 +32,20 @@ def evaluate_task_output(
         ]
     )
 
-    if not has_api_key:
-        return run_heuristic_evaluation(code_content)
+    # Bypass live LLM queries during unit test execution to keep tests fast, free, and deterministic
+    is_testing = "PYTEST_CURRENT_TEST" in os.environ
+    if is_testing or not has_api_key:
+        return run_heuristic_evaluation(spec_content)
 
     system_instruction = (
-        "You are an expert code reviewer and quality critic. Your job is to verify "
-        "if the proposed code satisfies the task requirements and contains no placeholders, "
-        "syntactic errors, or bugs. Respond strictly with JSON conforming to the CriticEvaluation schema."
+        "You are an expert prompt architect and technical specification reviewer. Your job is to verify "
+        "if the proposed Markdown blueprint contains a clear 'Rough Idea' paragraph explaining the logic, "
+        "and a detailed, executable 'Copilot/ChatGPT Prompt Recipe' block with no placeholders or unresolved tasks. "
+        "Respond strictly with JSON conforming to the CriticEvaluation schema."
     )
     user_prompt = (
         f"Task Description:\n{task_description}\n\n"
-        f"Generated Code:\n{code_content}\n"
+        f"Generated Specification:\n{spec_content}\n"
     )
 
     try:
@@ -62,53 +65,51 @@ def evaluate_task_output(
         return CriticEvaluation(**data)
     except Exception as e:
         logger.error(f"LLM Critic call failed: {e}. Falling back to heuristic evaluation.")
-        return run_heuristic_evaluation(code_content)
+        return run_heuristic_evaluation(spec_content)
 
-def run_heuristic_evaluation(code_content: str) -> CriticEvaluation:
-    """Heuristic rule-based fallback evaluation for offline use."""
-    if not code_content.strip():
+def run_heuristic_evaluation(spec_content: str) -> CriticEvaluation:
+    """Heuristic rule-based fallback evaluation for markdown blueprints."""
+    if not spec_content.strip():
         return CriticEvaluation(
             is_approved=False,
-            feedback="The target code content is completely empty.",
+            feedback="The target blueprint specification is completely empty.",
             issues=["Empty file content"]
         )
 
     issues = []
-    # Scan for common placeholder keywords
-    if "todo" in code_content.lower():
-        issues.append("Found pending 'TODO' marker in code.")
-    if "notimplementederror" in code_content.lower():
-        issues.append("Found un-implemented block raising 'NotImplementedError'.")
-    if "pass" in code_content:
-        # Check if pass is used as placeholder inside a block
-        # Simple line checks to avoid false positives in comments
-        lines = code_content.splitlines()
-        for i, line in enumerate(lines):
-            stripped = line.strip()
-            if stripped == "pass":
-                # Check context to verify if it represents a stubbed function
-                issues.append(f"Found stubbed 'pass' placeholder on line {i+1}.")
-                break
+    
+    # 1. Structural checks
+    if "💡 The Rough Idea" not in spec_content and "The Rough Idea" not in spec_content:
+        issues.append("Missing 'The Rough Idea' paragraph summarizing the implementation strategy.")
+    
+    if "```prompt" not in spec_content:
+        issues.append("Missing '```prompt' recipe code block for downstream coding AIs.")
+
+    # 2. Scan for placeholders
+    if "todo" in spec_content.lower():
+        issues.append("Found pending 'TODO' placeholder inside the specification.")
+    if "notimplementederror" in spec_content.lower():
+        issues.append("Found un-implemented 'NotImplementedError' stub recommendation.")
 
     if issues:
         return CriticEvaluation(
             is_approved=False,
-            feedback=f"Heuristic audit rejected the code due to placeholder symbols: {', '.join(issues)}",
+            feedback=f"Heuristic spec audit failed: {', '.join(issues)}",
             issues=issues
         )
     
     return CriticEvaluation(
         is_approved=True,
-        feedback="Heuristic audit passed successfully.",
+        feedback="Heuristic spec audit passed successfully.",
         issues=[]
     )
 
 def critic_node(state: ProjectState) -> dict:
-    """LangGraph node representing the anti-hallucination critic validation."""
+    """LangGraph node representing the anti-hallucination spec verifier."""
     active_task_id = state.get("active_task_id")
     backlog = state.get("task_backlog", [])
     
-    # 1. Locate active task item
+    # Locate active task item
     active_task = None
     for task in backlog:
         t_id = task.task_id if hasattr(task, "task_id") else task.get("task_id")
@@ -123,25 +124,25 @@ def critic_node(state: ProjectState) -> dict:
             "critic_feedback": "Skipped. No active task found."
         }
 
-    # 2. Read properties
+    # Read properties
     target_files = active_task.target_files if hasattr(active_task, "target_files") else active_task.get("target_files", [])
     description = active_task.description if hasattr(active_task, "description") else active_task.get("description", "")
     
-    # 3. Read target files content from disk
-    code_content = ""
+    # Read target spec files content from disk
+    spec_content = ""
     for path in target_files:
         if os.path.exists(path):
             try:
                 with open(path, "r", encoding="utf-8") as f:
-                    code_content += f"\n--- File: {path} ---\n" + f.read()
+                    spec_content += f"\n--- File: {path} ---\n" + f.read()
             except Exception as e:
-                logger.error(f"Failed to read file {path} for validation: {e}")
+                logger.error(f"Failed to read specification file {path} for validation: {e}")
 
-    # 4. Evaluate
-    eval_result = evaluate_task_output(description, code_content)
+    # Evaluate
+    eval_result = evaluate_task_output(description, spec_content)
     new_iteration = state.get("critic_iteration", 0) + 1
 
-    # 5. Update task backlog status
+    # Update task backlog status
     updated_backlog = []
     for task in backlog:
         t_id = task.task_id if hasattr(task, "task_id") else task.get("task_id")

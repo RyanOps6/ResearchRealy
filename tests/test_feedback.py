@@ -12,19 +12,19 @@ from src.core.graph_feedback import (
 
 @pytest.fixture
 def temp_task_file():
-    """Setup and teardown a temporary file for code writing simulation."""
+    """Setup and teardown a temporary markdown spec file for writing simulation."""
     temp_dir = tempfile.gettempdir()
-    temp_path = os.path.join(temp_dir, "simulated_target.py").replace("\\", "/")
+    temp_path = os.path.join(temp_dir, "simulated_target_spec.md").replace("\\", "/")
     yield temp_path
     if os.path.exists(temp_path):
         os.remove(temp_path)
 
 def test_feedback_loop_repairs_and_passes(temp_task_file):
-    """Verify that the graph cycles to repair stubbed code and terminates once passed."""
+    """Verify that the graph cycles to repair stubbed specifications and terminates once passed."""
     task = TaskItem(
         task_id="TSK-FEEDBACK",
         title="Simulated Task",
-        description="Write a clean Python function.",
+        description="Generate a clean Markdown blueprint.",
         status="IN_PROGRESS",
         target_files=[temp_task_file]
     )
@@ -44,11 +44,11 @@ def test_feedback_loop_repairs_and_passes(temp_task_file):
         critic_feedback=None
     )
 
-    # Invoke graph. It will run:
-    # 1. coder_node (writes stub)
-    # 2. critic_node (evaluates -> fails, critic_iteration=1)
+    # Invoke graph:
+    # 1. coder_node (writes stub containing TODO)
+    # 2. critic_node (evaluates -> fails on TODO, critic_iteration=1)
     # 3. route_critic (returns coder)
-    # 4. coder_node (writes clean code because iteration=1)
+    # 4. coder_node (writes clean spec because iteration=1)
     # 5. critic_node (evaluates -> passes, critic_iteration=2)
     # 6. route_critic (returns __end__)
     final_state = compiled_feedback_graph.invoke(state)
@@ -61,9 +61,9 @@ def test_feedback_loop_repairs_and_passes(temp_task_file):
     assert final_state["task_backlog"][0].status == "COMPLETED"
 
 def test_feedback_loop_max_retries_guard(temp_task_file):
-    """Verify that the graph terminates on maximum iteration limits if validation keeps failing."""
+    """Verify that the graph terminates on maximum iteration limits if spec validation keeps failing."""
     
-    # We define a custom coder node that always writes stub/TODO code
+    # We define a custom coder node that always writes stub specifications containing TODOs
     def bad_coder_node(state: ProjectState) -> dict:
         active_task_id = state.get("active_task_id")
         backlog = state.get("task_backlog", [])
@@ -78,8 +78,14 @@ def test_feedback_loop_max_retries_guard(temp_task_file):
             for path in active_task.target_files:
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 with open(path, "w", encoding="utf-8") as f:
-                    # Always write placeholder containing TODO to force failure
-                    f.write("def execute_task():\n    # TODO: always broken\n    pass\n")
+                    f.write(
+                        "# 📋 Copilot/ChatGPT Prompt Recipe: JWT Authentication Handler\n\n"
+                        "## 💡 The Rough Idea\n"
+                        "We need to implement a JWT authentication handler. # TODO: always broken.\n\n"
+                        "```prompt\n"
+                        "Write code for src/auth.py.\n"
+                        "```\n"
+                    )
         return {}
 
     # Compile a test workflow with the broken coder
@@ -101,7 +107,7 @@ def test_feedback_loop_max_retries_guard(temp_task_file):
     task = TaskItem(
         task_id="TSK-RETRY-LIMIT",
         title="Simulated Failed Task",
-        description="Write code.",
+        description="Generate spec.",
         status="IN_PROGRESS",
         target_files=[temp_task_file]
     )

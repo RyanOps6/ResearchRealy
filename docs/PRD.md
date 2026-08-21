@@ -14,7 +14,7 @@ The **Master Brain AI Orchestrator** is an enterprise-grade, state-driven multi-
 
 ### The Master Brain Solution
 
-This system replaces linear chat transcripts with an **event-driven state graph**, **tri-tier persistent memory**, **AST-driven hybrid Code RAG**, **live web intelligence**, and a **dual-pass Critic-Verifier loop** to guarantee zero context loss and zero-regression prompt generation.
+This system replaces linear chat transcripts with an **event-driven state graph**, **tri-tier persistent memory**, **AST-driven hybrid Code RAG**, **live web intelligence**, and a **dual-pass Critic-Verifier loop** to guarantee zero context loss and zero-regression prompt specification generation.
 
 ---
 
@@ -22,11 +22,12 @@ This system replaces linear chat transcripts with an **event-driven state graph*
 
 | Metric | Target SLA | Measurement & Verification Method |
 | --- | --- | --- |
-| **Hallucination / Factuality Error Rate** | $\le 0.1\%$ | Critic-node AST validation against real disk files and online documentation schemas. |
+| **Hallucination / Factuality Error Rate** | $\le 0.1\%$ | Critic-node validation of prompt recipes against local AST structures and scraped online API schemas. |
 | **Context Retention Across Sessions** | $100\%$ ($0\%$ drift) | Graph state checkpointing stored in PostgreSQL tables (`checkpoints`, `writes`). |
 | **Code Retrieval Accuracy (NDCG@10)** | $\ge 0.94$ | Hybrid search: Tree-sitter AST chunks + BM25 keyword matching + Dense embeddings via Qdrant. |
 | **External Documentation Recency** | Real-time ($\le 24$h) | Tavily / Exa search integration with version-pinned documentation scrapers. |
-| **Downstream Schema Adherence** | $100\%$ | Pydantic validation on all task delegation payloads for IDEs/Coding Agents. |
+| **Source Code Protection / Safety** | $100\%$ | Guaranteeing zero lines of unauthorized code are written directly to production source files. |
+| **Downstream Schema Adherence** | $100\%$ | Pydantic validation on all task delegation blueprints and prompt recipe outputs. |
 
 ---
 
@@ -178,12 +179,9 @@ Class & Method Blocks     Imports & Type Signatures
   ▼                             ▼
 Dense Vectors (Qdrant)       BM25 Sparse Lexical Index
   │                             │
-  └──────────────┬──────────────┘
+  └──────────────┴──────────────┘
                  ▼
     [ Reciprocal Rank Fusion (RRF) ]
-                 │
-                 ▼
-    [ Cross-Encoder Re-ranker ]
                  │
                  ▼
     High-Precision Code Context
@@ -237,59 +235,44 @@ Loop (Max 3x)       Output Payload
 
 ```
 
-If validation fails, the Critic generates structured feedback:
-
-```json
-{
-  "critic_passed": false,
-  "violation_type": "LOCKED_INVARIANT_VIOLATION",
-  "evidence": "Draft instructed direct SQL execution in route handler.",
-  "invariant_rule": "All database operations must go through the Repository pattern.",
-  "required_remediation": "Refactor the instruction to implement UserRepository.get_by_id first."
-}
-
-```
+If validation fails, the Critic generates structured feedback detailing the missing sections or placeholder text to trigger a spec-repair loop.
 
 ---
 
 ### 4.6 Downstream Delegation Schema (Target Agent Output)
 
-The final output is structured JSON formatted for pasting into Cursor, Claude Code, Windsurf, or Aider:
+The final output is a structured Markdown blueprint document designed for copying and pasting directly into downstream coding AIs (like Cursor, Claude Code, Windsurf, or Copilot Chat):
 
-```json
-{
-  "task_id": "TSK-014",
-  "milestone": "Authentication & Authorization",
-  "objective": "Implement JWT Refresh Token Rotation with Redis Blacklisting",
-  "context": {
-    "tech_stack": {
-      "framework": "FastAPI 0.115+",
-      "cache": "Redis 7.2",
-      "jwt_lib": "PyJWT 2.9"
-    },
-    "locked_invariants": [
-      "Store token SHA256 hashes in Redis, never raw tokens",
-      "Redis TTL must match token expiration time exactly"
-    ],
-    "code_references": [
-      {
-        "file_path": "src/core/security.py",
-        "symbol": "create_refresh_token",
-        "lines": "34-62"
-      }
-    ]
-  },
-  "step_by_step_execution": [
-    "Step 1: In 'src/core/redis.py', add method 'blacklist_token_hash(token_hash: str, ttl: int)'",
-    "Step 2: In 'src/core/security.py', update 'verify_refresh_token' to check Redis blacklist before issuing new token pair",
-    "Step 3: In 'tests/test_security.py', write unit tests covering token reuse attack"
-  ],
-  "verification_commands": [
-    "pytest tests/test_security.py -v",
-    "redis-cli -p 6379 ping"
-  ]
-}
+# 📋 Copilot/ChatGPT Prompt Recipe: JWT Authentication Handler
 
+> **Target File:** src/auth.py
+> **Dependencies:** PyJWT==2.8.0
+
+## 💡 The Rough Idea
+We want to create a secure token manager that issues temporary access keys for user sessions. When a user logs in, we take their unique user ID, wrap it in a payload dictionary with a 60-minute expiration time, and sign it using a secure secret key and the HS256 algorithm. The function should return this signature string directly so that our backend can attach it to response headers. We must also include error catching to intercept any encryption failures and raise standard unauthorized HTTP exceptions.
+
+---
+
+Copy and paste the prompt block below into your AI coding assistant:
+
+```prompt
+Act as an expert Python developer. Write the code for src/auth.py based on the following requirements:
+
+1. Import:
+   - import jwt
+   - from datetime import datetime, timezone
+
+2. Implement a function:
+   - Name: generate_access_token
+   - Parameters: user_id: str, expires_in_minutes: int = 60
+   - Returns: str (the encoded JWT token)
+
+3. Logic:
+   - Create a payload dictionary containing sub, exp, and iat keys.
+   - Encode the payload using jwt.encode() with your secret key, using algorithm "HS256".
+
+4. Error Handling:
+   - Wrap the encoding in a try-except block and raise HTTP exception on failure.
 ```
 
 ---
