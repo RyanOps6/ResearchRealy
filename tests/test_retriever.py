@@ -134,6 +134,8 @@ def test_hybrid_search_end_to_end():
     COLLECTION_NAME = "code_chunks"
     if COLLECTION_NAME in [c.name for c in client.get_collections().collections]:
         client.delete_collection(collection_name=COLLECTION_NAME)
+        import time
+        time.sleep(1.0)
 
     # Use patch context managers to mock embedding generations during indexing and retrieval
     with patch("src.rag.indexer.get_dense_embedding", side_effect=mock_get_dense_embedding), \

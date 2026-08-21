@@ -36,6 +36,7 @@ def test_watcher_incremental_indexing(test_workspace):
     # Start with a clean Qdrant collection for test stability
     if COLLECTION_NAME in [c.name for c in client.get_collections().collections]:
         client.delete_collection(collection_name=COLLECTION_NAME)
+        time.sleep(1.0)
 
     # 1. Initialize indices with base files
     initial_chunks = [

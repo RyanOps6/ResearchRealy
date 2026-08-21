@@ -62,21 +62,10 @@ async def chat_loop():
                 if current_state.values:
                     state_values = current_state.values
 
-                # Detect if we were waiting for permission and user confirmed
-                was_waiting = state_values.get("conversational_response") is not None
-                is_confirmation = user_input.lower() in ["yes", "y", "proceed", "go ahead", "do it", "sure", "ok"]
-
-                if was_waiting and is_confirmation:
-                    state_values["permission_granted"] = True
-                    state_values["conversational_response"] = None
-                    # Objective remains unchanged (carries over previous task)
-                else:
-                    # Brand new user prompt/objective (requires permission evaluation)
-                    state_values["permission_granted"] = False
-                    state_values["conversational_response"] = None
-                    payload = dict(state_values.get("generated_prompt_payload") or {})
-                    payload["objective"] = user_input
-                    state_values["generated_prompt_payload"] = payload
+                # Simply pass the user's input directly as the new objective
+                payload = dict(state_values.get("generated_prompt_payload") or {})
+                payload["objective"] = user_input
+                state_values["generated_prompt_payload"] = payload
 
                 # Reset validation iterations for the new prompt run
                 state_values["critic_iteration"] = 0
