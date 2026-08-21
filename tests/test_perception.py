@@ -84,4 +84,12 @@ def test_route_perception_halts_if_plan_exists():
         critic_passed=False,
         critic_feedback=None
     )
+
+    # With permission_granted = False, it should halt (__end__)
+    state["permission_granted"] = False
+    state["conversational_response"] = None
+    assert route_perception(state) == "__end__"
+
+    # With permission_granted = True, it should proceed to coder
+    state["permission_granted"] = True
     assert route_perception(state) == "coder"

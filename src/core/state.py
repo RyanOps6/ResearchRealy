@@ -31,3 +31,5 @@ class ProjectState(TypedDict):
     critic_iteration: int
     critic_passed: bool
     critic_feedback: Optional[str]
+    permission_granted: bool
+    conversational_response: Optional[str]

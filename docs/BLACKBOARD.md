@@ -10,6 +10,15 @@
 ## 2. Change Event Stream (Append-Only Log)
 > *Every agent MUST append its change summary here immediately after making edits.*
 
+### [2026-08-21 16:38] — Task: TSK-015 (Interactive Conversational Permission Gate)
+- **Agent:** `Antigravity (Lead Architect & Core Engineer)`
+- **Files Created:**
+  - `tests/test_permission_gate.py` (Asserts that when `permission_granted` is `False`, writing is blocked and permission is requested; when `True`, specs are written)
+- **Files Modified:**
+  - `src/core/state.py` (Added `permission_granted` and `conversational_response` to `ProjectState`)
+  - `src/nodes/perception.py` (Enforced path routing blocks and set permission prompts for unapproved CODE intent requests)
+  - `src/main.py` & `chat.py` (Configured CLI and interactive client loops to support state-based permission prompting and user confirmations)
+
 ### [2026-08-21 12:55] — Task: TSK-014 (Full Orchestration Compose Stack)
 - **Agent:** `Antigravity (Lead Architect & Core Engineer)`
 - **Files Created:**

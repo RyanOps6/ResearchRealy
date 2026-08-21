@@ -191,3 +191,18 @@ Deliverable: Fully sandboxed execution, regex secret scrubbers, and live tracing
 - **Verification Commands:**
   - `docker compose up -d`
   - `pytest tests/test_integration.py -v`
+
+### [x] TSK-015: Interactive Conversational Permission Gate
+- **Dependency:** `TSK-014`
+- **Target Files:**
+  - [MODIFY] [`src/core/state.py`](file:///e:/TA/src/core/state.py)
+  - [MODIFY] [`src/nodes/perception.py`](file:///e:/TA/src/nodes/perception.py)
+  - [MODIFY] [`src/main.py`](file:///e:/TA/src/main.py)
+  - [MODIFY] [`chat.py`](file:///e:/TA/chat.py)
+  - [NEW] [`tests/test_permission_gate.py`](file:///e:/TA/tests/test_permission_gate.py)
+- **Acceptance Criteria:**
+  - Block file writing operations (`CODE` intent) if `permission_granted` is `False`.
+  - Prompt user conversationally with a permission request to write base files to disk.
+  - Automatically evaluate user input and grant permission when `"yes"` or `"proceed"` is detected.
+- **Verification Commands:**
+  - `pytest tests/test_permission_gate.py -v`

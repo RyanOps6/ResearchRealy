@@ -75,7 +75,9 @@ async def run_workflow(prompt: str, thread_id: str) -> None:
             "generated_prompt_payload": {"objective": prompt},
             "critic_iteration": 0,
             "critic_passed": False,
-            "critic_feedback": None
+            "critic_feedback": None,
+            "permission_granted": False,
+            "conversational_response": None
         }
         
         config = {"configurable": {"thread_id": thread_id}}
@@ -83,7 +85,12 @@ async def run_workflow(prompt: str, thread_id: str) -> None:
         
         result = await app.ainvoke(initial_state, config)
         print("[+] Session run completed successfully.")
-        print_backlog(result.get("task_backlog", []))
+        
+        conv_resp = result.get("conversational_response")
+        if conv_resp:
+            print(f"\n🤖 Advisor:\n{conv_resp}\n")
+        else:
+            print_backlog(result.get("task_backlog", []))
 
 async def resume_workflow(thread_id: str) -> None:
     """Connects to PostgreSQL checkpointer, retrieves checkpoints for thread_id, and resumes/prints state."""

@@ -64,7 +64,9 @@ def test_full_orchestration_coding_flow(temp_spec_file):
         generated_prompt_payload={"intent": "CODE", "objective": "Create JWT spec"},
         critic_iteration=0,
         critic_passed=False,
-        critic_feedback=None
+        critic_feedback=None,
+        permission_granted=True,
+        conversational_response=None
     )
 
     # Execute graph:

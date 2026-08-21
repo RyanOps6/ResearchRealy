@@ -65,7 +65,8 @@ def classify_user_intent(prompt: str, model_name: Optional[str] = None) -> str:
 
 def perception_node(state: ProjectState) -> dict:
     """
-    Graph node that evaluates the input query intent and updates the state payload.
+    Graph node that evaluates the input query intent, checks permission status,
+    and updates state payload / conversational response.
     """
     objective = ""
     if state.get("generated_prompt_payload"):
@@ -80,14 +81,29 @@ def perception_node(state: ProjectState) -> dict:
     payload["intent"] = intent
     payload["objective"] = objective
 
+    # Check permission gating for CODE intent (file writing)
+    permission_granted = state.get("permission_granted", False)
+    conversational_response = state.get("conversational_response")
+
+    if intent == "CODE" and not permission_granted:
+        conversational_response = (
+            f"I have analyzed your request: '{objective}'.\n\n"
+            f"I am ready to generate the detailed Markdown blueprint specification files for your project.\n"
+            f"Before writing files to your disk, I want to confirm your motives.\n\n"
+            f"Would you like me to write the base specification files now? Reply 'yes' or 'proceed' to confirm."
+        )
+    else:
+        conversational_response = None
+
     return {
-        "generated_prompt_payload": payload
+        "generated_prompt_payload": payload,
+        "conversational_response": conversational_response
     }
 
 def route_perception(state: ProjectState) -> str:
     """
     Conditional routing function for LangGraph.
-    Determines if execution goes to the decomposer or halts.
+    Determines if execution goes to the decomposer, coder (if permission is granted), or halts.
     """
     payload = state.get("generated_prompt_payload") or {}
     intent = payload.get("intent", "DECOMPOSE")
@@ -98,7 +114,11 @@ def route_perception(state: ProjectState) -> str:
         return "decomposer"
         
     if intent == "CODE":
-        return "coder"
+        # Only route to coder if permission is granted by the user
+        if state.get("permission_granted", False):
+            return "coder"
+        else:
+            return "__end__"
         
     if intent == "CRITIC":
         return "critic"
