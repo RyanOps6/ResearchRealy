@@ -84,4 +84,4 @@ def test_route_perception_halts_if_plan_exists():
         critic_passed=False,
         critic_feedback=None
     )
-    assert route_perception(state) == "__end__"
+    assert route_perception(state) == "coder"

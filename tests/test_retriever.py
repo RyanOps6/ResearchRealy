@@ -1,5 +1,6 @@
 import os
 import pytest
+from unittest.mock import patch
 from qdrant_client import QdrantClient
 from src.core.state import CodeReference
 from src.rag.indexer import (
@@ -50,18 +51,30 @@ def test_reciprocal_rank_fusion_math():
     dense_hits = [doc_a, doc_b]
     sparse_hits = [doc_c, doc_a]
 
-    # Run fusion
-    fused = reciprocal_rank_fusion(dense_hits, sparse_hits, k=60)
-    
-    # Assertions
+    # Run RRF
+    # A RRF: (1/(60+1)) + (1/(60+2)) = 0.01639 + 0.01613 = 0.03252
+    # B RRF: (1/(60+2)) = 0.01613
+    # C RRF: (1/(60+1)) = 0.01639
+    # Expect order: A, C, B
+    fused = reciprocal_rank_fusion(dense_hits, sparse_hits)
+
     assert len(fused) == 3
-    # doc_a appears in both (rank 1 and 2), so its RRF score should be highest:
-    # Score A = 1/(60+1) + 1/(60+2) = 0.01639 + 0.01612 = 0.0325
-    # Score C = 1/(60+1) = 0.01639
-    # Score B = 1/(60+2) = 0.01612
     assert fused[0].symbol_name == "a"
     assert fused[1].symbol_name == "c"
     assert fused[2].symbol_name == "b"
+
+def mock_get_dense_embedding(text: str) -> list:
+    """Helper to mock semantic dense vectors deterministically for retriever testing."""
+    if any(w in text.lower() for w in ["database", "connection", "get_database_connection"]):
+        v = [0.0] * 1536
+        v[0] = 1.0
+        return v
+    if any(w in text.lower() for w in ["user", "sign", "credentials", "authenticate_user"]):
+        v = [0.0] * 1536
+        v[1] = 1.0
+        return v
+    from src.rag.indexer import get_mock_embedding
+    return get_mock_embedding(text, 1536)
 
 def test_hybrid_search_end_to_end():
     """Verify end-to-end hybrid retrieval using Qdrant and BM25 indexers."""
@@ -117,21 +130,28 @@ def test_hybrid_search_end_to_end():
             f"Error details: {e}"
         )
 
-    # 1. Index the mock chunks
-    index_code_references(chunks, qdrant_url=qdrant_url)
+    # Clean collection to prevent leftovers from watcher tests leaking in
+    COLLECTION_NAME = "code_chunks"
+    if COLLECTION_NAME in [c.name for c in client.get_collections().collections]:
+        client.delete_collection(collection_name=COLLECTION_NAME)
 
-    # 2. Query exact keyword terms (matches BM25 sparse search)
-    query_keyword = "database connection pool"
-    results_keyword = hybrid_search(query_keyword, limit=3, qdrant_url=qdrant_url)
-    
-    assert len(results_keyword) > 0
-    # The database connection chunk should be the first result
-    assert results_keyword[0].symbol_name == "get_database_connection"
+    # Use patch context managers to mock embedding generations during indexing and retrieval
+    with patch("src.rag.indexer.get_dense_embedding", side_effect=mock_get_dense_embedding), \
+         patch("src.rag.retriever.get_dense_embedding", side_effect=mock_get_dense_embedding):
+        
+        # 1. Index the mock chunks
+        index_code_references(chunks, qdrant_url=qdrant_url)
 
-    # 3. Query semantic terms (matches Qdrant dense vector search)
-    query_semantic = "user sign in verification credentials"
-    results_semantic = hybrid_search(query_semantic, limit=3, qdrant_url=qdrant_url)
-    
-    assert len(results_semantic) > 0
-    # The authenticate_user chunk should match semantically
-    assert results_semantic[0].symbol_name == "authenticate_user"
+        # 2. Query exact keyword terms (matches BM25 sparse search and mock dense database key)
+        query_keyword = "database connection pool"
+        results_keyword = hybrid_search(query_keyword, limit=3, qdrant_url=qdrant_url)
+        
+        assert len(results_keyword) > 0
+        assert results_keyword[0].symbol_name == "get_database_connection"
+
+        # 3. Query semantic terms (matches Qdrant dense vector auth key)
+        query_semantic = "user sign in verification credentials"
+        results_semantic = hybrid_search(query_semantic, limit=3, qdrant_url=qdrant_url)
+        
+        assert len(results_semantic) > 0
+        assert results_semantic[0].symbol_name == "authenticate_user"

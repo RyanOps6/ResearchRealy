@@ -10,6 +10,33 @@
 ## 2. Change Event Stream (Append-Only Log)
 > *Every agent MUST append its change summary here immediately after making edits.*
 
+### [2026-08-21 12:55] — Task: TSK-014 (Full Orchestration Compose Stack)
+- **Agent:** `Antigravity (Lead Architect & Core Engineer)`
+- **Files Created:**
+  - `tests/test_integration.py` (Implemented full end-to-end integration tests asserting intent classification, cyclic spec generation, multi-iteration verifications, and filesystem outputs)
+- **Files Modified:**
+  - `src/core/graph.py` (Compiled the final complete orchestrator StateGraph combining intent classification, DAG task decomposition, and specifications generation loops)
+  - `src/nodes/perception.py` (Expanded route_perception conditional routing to support CODE and CRITIC routes)
+- **Exported Symbols / Interfaces:**
+  - `get_compiled_graph(checkpointer)` -> compiled unified LangGraph workflow
+  - `route_perception(state)` -> "decomposer" | "coder" | "critic" | "__end__"
+- **Important Notes:**
+  - Decoupled checkpointer tests by defining isolated local dummy graphs in `tests/test_foundation.py`.
+  - Avoided cross-test state pollution in `tests/test_watcher.py` and `tests/test_retriever.py` by clearing collection namespaces and index pickle files before runs, ensuring a fully green test dashboard.
+
+### [2026-08-21 12:20] — Task: TSK-013 (Sandboxing, Secret Scrubbing & Tracing)
+- **Agent:** `Antigravity (Lead Architect & Core Engineer)`
+- **Files Created:**
+  - `src/core/security.py` (Implemented path traversal checker validate_secure_path resolving canonical real paths, and regex-based credential scrubber scrub_secrets)
+  - `src/core/tracing.py` (Implemented get_tracing_callbacks dynamically registering Langfuse CallbackHandler when credentials are set in settings)
+  - `tests/test_security.py` (Implemented unit tests validating path traversal exceptions, allowed paths, and scrubbing of OpenAI, Nvidia, Tavily keys, and Postgres connection passwords)
+- **Exported Symbols / Interfaces:**
+  - `validate_secure_path(path, root)` -> canonical absolute path or PermissionError
+  - `scrub_secrets(text)` -> sanitized string with [REDACTED] segments
+  - `get_tracing_callbacks()` -> active tracing callbacks array
+- **Important Notes:**
+  - The security validation prevents file reads/writes outside project directory bounds to ensure container safety.
+
 ### [2026-08-21 12:10] — Task: Pivot Core to Markdown Specification Blueprint Generator
 - **Agent:** `Antigravity (Lead Architect & Core Engineer)`
 - **Files Modified:**

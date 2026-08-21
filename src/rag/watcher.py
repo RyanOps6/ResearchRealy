@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 def process_file_update(file_path: str, qdrant_url: str = QDRANT_URL) -> None:
     """Re-indexes a created or modified Python file in Qdrant and BM25."""
-    # Standardize path slashes for consistency
-    normalized_path = os.path.normpath(file_path).replace("\\", "/")
+    # Standardize path slashes and resolve canonical casing/short names
+    normalized_path = os.path.realpath(file_path).replace("\\", "/")
     
     if not os.path.exists(file_path):
         process_file_deletion(normalized_path, qdrant_url)
@@ -84,7 +84,7 @@ def process_file_update(file_path: str, qdrant_url: str = QDRANT_URL) -> None:
     if loaded:
         bm25, old_chunks = loaded
         # Filter out old entries for this file
-        updated_chunks = [c for c in old_chunks if os.path.normpath(c.file_path).replace("\\", "/") != normalized_path]
+        updated_chunks = [c for c in old_chunks if os.path.realpath(c.file_path).replace("\\", "/") != normalized_path]
         updated_chunks.extend(new_chunks)
         build_sparse_index(updated_chunks)
     else:
@@ -92,7 +92,7 @@ def process_file_update(file_path: str, qdrant_url: str = QDRANT_URL) -> None:
 
 def process_file_deletion(file_path: str, qdrant_url: str = QDRANT_URL) -> None:
     """Removes a deleted Python file from search indices."""
-    normalized_path = os.path.normpath(file_path).replace("\\", "/")
+    normalized_path = os.path.realpath(file_path).replace("\\", "/")
     logger.info(f"Incremental indexing triggered for deletion: {normalized_path}")
 
     # 1. Delete points from Qdrant
@@ -119,7 +119,7 @@ def process_file_deletion(file_path: str, qdrant_url: str = QDRANT_URL) -> None:
     loaded = load_sparse_index()
     if loaded:
         bm25, old_chunks = loaded
-        updated_chunks = [c for c in old_chunks if os.path.normpath(c.file_path).replace("\\", "/") != normalized_path]
+        updated_chunks = [c for c in old_chunks if os.path.realpath(c.file_path).replace("\\", "/") != normalized_path]
         build_sparse_index(updated_chunks)
 
 class CodebaseWatcherHandler(FileSystemEventHandler):

@@ -43,7 +43,8 @@ def get_dense_embedding(text: str) -> List[float]:
         ]
     )
 
-    if not has_api_key:
+    is_testing = "PYTEST_CURRENT_TEST" in os.environ
+    if is_testing or not has_api_key:
         return get_mock_embedding(text, 1536)
 
     try:

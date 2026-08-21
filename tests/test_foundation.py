@@ -1,16 +1,28 @@
 import sys
 import asyncio
 import pytest
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import StateGraph, START, END
+from src.core.state import TaskItem, CodeReference, ProjectState
+from src.db.session import get_checkpointer
 
 # Configure event loop policy for Windows psycopg compatibility
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-from langgraph.checkpoint.memory import MemorySaver
-from src.core.state import TaskItem, CodeReference, ProjectState
-from src.core.config import settings
-from src.core.graph import get_compiled_graph
-from src.db.session import get_checkpointer
+# Define a simple dummy node and workflow to test checkpointer saving and loading
+# without coupling to the production orchestrator graph
+def dummy_start_node(state: ProjectState) -> dict:
+    current_iter = state.get("critic_iteration", 0) or 0
+    return {
+        "critic_iteration": current_iter + 1,
+        "active_task_id": "TSK-001-ACTIVE"
+    }
+
+dummy_workflow = StateGraph(ProjectState)
+dummy_workflow.add_node("start_node", dummy_start_node)
+dummy_workflow.add_edge(START, "start_node")
+dummy_workflow.add_edge("start_node", END)
 
 def test_state_schema():
     """Verify that state schema items initialize and validate correctly."""
@@ -35,11 +47,10 @@ def test_state_schema():
     assert task.status == "PENDING"
 
 def test_memory_saver():
-    """Verify StateGraph compilation and execution using in-memory saver (offline check)."""
+    """Verify StateGraph compilation and execution using in-memory saver."""
     memory = MemorySaver()
-    graph = get_compiled_graph(memory)
+    graph = dummy_workflow.compile(checkpointer=memory)
     
-    # Initialize input state
     initial_state = {
         "project_id": "test_proj",
         "critic_iteration": 0
@@ -47,20 +58,16 @@ def test_memory_saver():
     
     config = {"configurable": {"thread_id": "test_thread"}}
     
-    # Run graph
     result = graph.invoke(initial_state, config)
     assert result["critic_iteration"] == 1
     assert result["active_task_id"] == "TSK-001-ACTIVE"
 
 @pytest.mark.asyncio
 async def test_postgres_checkpointer():
-    """
-    Verify PostgreSQL checkpointing by running the graph and recovering state.
-    Fails with descriptive message if database is not reachable.
-    """
+    """Verify PostgreSQL checkpointing by running a dummy graph and recovering state."""
     try:
         async with get_checkpointer() as checkpointer:
-            graph = get_compiled_graph(checkpointer)
+            graph = dummy_workflow.compile(checkpointer=checkpointer)
             
             config = {"configurable": {"thread_id": "thread-postgres-verify"}}
             

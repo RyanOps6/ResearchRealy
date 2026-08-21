@@ -97,4 +97,10 @@ def route_perception(state: ProjectState) -> str:
     if not backlog or intent == "DECOMPOSE":
         return "decomposer"
         
+    if intent == "CODE":
+        return "coder"
+        
+    if intent == "CRITIC":
+        return "critic"
+        
     return "__end__"

@@ -169,7 +169,7 @@ Deliverable: A cyclic feedback loop validating code drafts against rules and dat
 ## Phase 5: Productionization, Security & Observability
 Deliverable: Fully sandboxed execution, regex secret scrubbers, and live tracing dashboard integration.
 
-### [ ] TSK-013: Sandboxing, Secret Scrubbing & Tracing
+### [x] TSK-013: Sandboxing, Secret Scrubbing & Tracing
 - **Dependency:** `TSK-001`
 - **Target Files:**
   - [NEW] [`src/core/security.py`](file:///e:/TA/src/core/security.py)
@@ -182,7 +182,7 @@ Deliverable: Fully sandboxed execution, regex secret scrubbers, and live tracing
 - **Verification Commands:**
   - `pytest tests/test_security.py -v`
 
-### [ ] TSK-014: Full Orchestration Compose Stack
+### [x] TSK-014: Full Orchestration Compose Stack
 - **Dependency:** `TSK-008`, `TSK-010`, `TSK-012`, `TSK-013`
 - **Target Files:**
   - [NEW] [`tests/test_integration.py`](file:///e:/TA/tests/test_integration.py)
