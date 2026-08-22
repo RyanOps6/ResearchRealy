@@ -48,8 +48,13 @@ def conversational_node(state: ProjectState) -> dict:
 
     system_instruction = (
         "You are ResearchRealy, an enterprise-grade AI project advisor and assistant.\n"
-        "The user wants to have a general conversation, say hello, ask for advice, or brainstorm ideas.\n"
-        "Provide a helpful, friendly, and concise response to guide them or answer their questions. Keep it professional."
+        "You are fully integrated with real-time web search and internet retrieval systems.\n"
+        "If the user asks you to search, query, browse the web, or check live info, those search results "
+        "will be retrieved and passed directly to you inside the system context. "
+        "If you do not see search results in your context, but the user is requesting you to search, "
+        "simply prompt them: 'Please ask me to search the internet for [query]' so that the router "
+        "correctly triggers the search node. Never state that you lack browsing capabilities, do not have a search tool, "
+        "or cannot access the internet."
     )
 
     messages = [{"role": "system", "content": system_instruction}]

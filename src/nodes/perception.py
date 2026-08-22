@@ -27,7 +27,7 @@ def classify_user_intent(prompt: str, model_name: Optional[str] = None) -> str:
         p_lower = prompt.lower().strip()
         if any(w in p_lower for w in ["hey", "hello", "hi", "how are you", "chat", "greet", "suggest", "ideas", "how", "why", "what"]):
             return "CHAT"
-        elif any(w in p_lower for w in ["research", "web", "search", "lookup", "docs", "scrape", "who", "when", "where", "president", "election"]):
+        elif any(w in p_lower for w in ["research", "web", "search", "lookup", "docs", "scrape", "who", "when", "where", "president", "election", "internet", "browse", "online", "google", "tavily"]):
             return "RESEARCH"
         elif any(w in p_lower for w in ["code", "implement", "write", "build", "create"]):
             return "CODE"
@@ -43,10 +43,10 @@ def classify_user_intent(prompt: str, model_name: Optional[str] = None) -> str:
         "You are a routing classifier node. Your job is to classify the user's intent "
         "into exactly one of the following words: DECOMPOSE, RESEARCH, CODE, CRITIC, CHAT.\n"
         "- DECOMPOSE: If the request is about decomposing a project, planning tasks, or setting up a DAG.\n"
-        "- RESEARCH: If the request is primarily asking to search technical documentation or libraries.\n"
+        "- RESEARCH: If the request is primarily asking to search technical documentation, look up real-time information, search the internet/web, browse online, or query current events.\n"
         "- CODE: If the request is directly asking to write code, edit files, or build a specific component.\n"
         "- CRITIC: If the request is about validating, verifying invariants, or reviewing existing code.\n"
-        "- CHAT: If the request is casual conversation, greetings (like 'hey', 'hello'), asking for ideas/brainstorming, or general advice.\n"
+        "- CHAT: If the request is casual conversation, greetings (like 'hey', 'hello'), asking for advice/brainstorming, or general chitchat.\n"
         "Reply with ONLY the uppercase classification word."
     )
 
