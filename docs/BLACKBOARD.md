@@ -10,6 +10,16 @@
 ## 2. Change Event Stream (Append-Only Log)
 > *Every agent MUST append its change summary here immediately after making edits.*
 
+### [2026-08-22 09:42] — Task: TSK-016 (Conversational Chat Node / CHAT Intent)
+- **Agent:** `Antigravity (Lead Architect & Core Engineer)`
+- **Files Created:**
+  - `src/nodes/chat.py` (Implemented the `conversational_node` generating direct, context-aware responses to casual questions and brainstorming)
+  - `tests/test_conversation.py` (Asserts that greetings and open-ended queries are routed to the chat node and return text responses without triggering decompositions/writes)
+- **Files Modified:**
+  - `src/nodes/perception.py` (Added `CHAT` to intent classifier instructions and offline keyword checks; prioritized routing to conversational node)
+  - `src/core/graph.py` (Added `"conversational"` node toCompiled Graph and mapped routing edge START ➔ perception ➔ conversational ➔ END)
+  - `chat.py` (Removed all hardcoded keyword filtering on input prompts, delegating classification entirely to the live AI router)
+
 ### [2026-08-21 16:38] — Task: TSK-015 (Interactive Conversational Permission Gate)
 - **Agent:** `Antigravity (Lead Architect & Core Engineer)`
 - **Files Created:**

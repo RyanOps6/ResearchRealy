@@ -206,3 +206,17 @@ Deliverable: Fully sandboxed execution, regex secret scrubbers, and live tracing
   - Automatically evaluate user input and grant permission when `"yes"` or `"proceed"` is detected.
 - **Verification Commands:**
   - `pytest tests/test_permission_gate.py -v`
+
+### [x] TSK-016: Conversational Chat Node (CHAT Intent)
+- **Dependency:** `TSK-015`
+- **Target Files:**
+  - [MODIFY] [`src/nodes/perception.py`](file:///e:/TA/src/nodes/perception.py)
+  - [NEW] [`src/nodes/chat.py`](file:///e:/TA/src/nodes/chat.py)
+  - [MODIFY] [`src/core/graph.py`](file:///e:/TA/src/core/graph.py)
+  - [NEW] [`tests/test_conversation.py`](file:///e:/TA/tests/test_conversation.py)
+- **Acceptance Criteria:**
+  - Implement a dedicated `"CHAT"` intent that intercepts greetings, open-ended brainstorming, and advice requests.
+  - Route execution to a new `"conversational"` node when `CHAT` intent is classified, bypassing task plans and file writes.
+  - Formulate natural conversational assistant replies inside the state machine and output them to the client.
+- **Verification Commands:**
+  - `pytest tests/test_conversation.py -v`
