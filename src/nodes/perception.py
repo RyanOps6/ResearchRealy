@@ -27,7 +27,7 @@ def classify_user_intent(prompt: str, model_name: Optional[str] = None) -> str:
         p_lower = prompt.lower().strip()
         if any(w in p_lower for w in ["hey", "hello", "hi", "how are you", "chat", "greet", "suggest", "ideas", "how", "why", "what"]):
             return "CHAT"
-        elif any(w in p_lower for w in ["research", "web", "search", "lookup", "docs", "scrape"]):
+        elif any(w in p_lower for w in ["research", "web", "search", "lookup", "docs", "scrape", "who", "when", "where", "president", "election"]):
             return "RESEARCH"
         elif any(w in p_lower for w in ["code", "implement", "write", "build", "create"]):
             return "CODE"
@@ -177,6 +177,9 @@ def route_perception(state: ProjectState) -> str:
 
     if intent == "CHAT":
         return "conversational"
+
+    if intent == "RESEARCH":
+        return "research"
 
     # If the backlog is empty or intent is explicitly DECOMPOSE, route to decomposer
     if not backlog or intent == "DECOMPOSE":

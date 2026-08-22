@@ -10,6 +10,18 @@
 ## 2. Change Event Stream (Append-Only Log)
 > *Every agent MUST append its change summary here immediately after making edits.*
 
+### [2026-08-22 10:00] — Task: TSK-017 (Conversational Memory & Search Cache)
+- **Agent:** `Antigravity (Lead Architect & Core Engineer)`
+- **Files Created:**
+  - `src/nodes/research_node.py` (Implemented the `research_node` querying the web and caching results to `docs/research_history.json`)
+  - `tests/test_conversational_memory.py` (Asserts that conversational threads append sequentially and research queries write caches and feed chat responses)
+- **Files Modified:**
+  - `src/core/state.py` (Added `chat_history` list to `ProjectState`)
+  - `chat.py` (Initialized and appended user inputs to state's `chat_history` payload)
+  - `src/nodes/perception.py` (Prioritized `CHAT` and `RESEARCH` routing; dynamically checks confirmation prompts via the live LLM)
+  - `src/nodes/chat.py` (Compiles message history and formats search result docs into LLM prompts; persists assistant turns in `chat_history`)
+  - `src/core/graph.py` (Registered `"research"` node and mapped transition path research ➔ conversational)
+
 ### [2026-08-22 09:42] — Task: TSK-016 (Conversational Chat Node / CHAT Intent)
 - **Agent:** `Antigravity (Lead Architect & Core Engineer)`
 - **Files Created:**

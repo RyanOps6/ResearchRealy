@@ -33,3 +33,4 @@ class ProjectState(TypedDict):
     critic_feedback: Optional[str]
     permission_granted: bool
     conversational_response: Optional[str]
+    chat_history: List[Dict[str, str]]

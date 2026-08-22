@@ -43,7 +43,8 @@ async def chat_loop():
             "critic_passed": False,
             "critic_feedback": None,
             "permission_granted": False,
-            "conversational_response": None
+            "conversational_response": None,
+            "chat_history": []
         }
 
         while True:
@@ -61,6 +62,13 @@ async def chat_loop():
                 current_state = await app.aget_state(config)
                 if current_state.values:
                     state_values = current_state.values
+
+                # Ensure chat_history list is initialized in state
+                if "chat_history" not in state_values or state_values["chat_history"] is None:
+                    state_values["chat_history"] = []
+
+                # Append the new user message to conversation history
+                state_values["chat_history"].append({"role": "user", "content": user_input})
 
                 # Simply pass the user's input directly as the new objective
                 payload = dict(state_values.get("generated_prompt_payload") or {})

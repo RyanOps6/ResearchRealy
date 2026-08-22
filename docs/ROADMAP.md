@@ -220,3 +220,21 @@ Deliverable: Fully sandboxed execution, regex secret scrubbers, and live tracing
   - Formulate natural conversational assistant replies inside the state machine and output them to the client.
 - **Verification Commands:**
   - `pytest tests/test_conversation.py -v`
+
+### [x] TSK-017: Conversational Memory & Search Cache
+- **Dependency:** `TSK-016`
+- **Target Files:**
+  - [MODIFY] [`src/core/state.py`](file:///e:/TA/src/core/state.py)
+  - [MODIFY] [`chat.py`](file:///e:/TA/chat.py)
+  - [MODIFY] [`src/nodes/perception.py`](file:///e:/TA/src/nodes/perception.py)
+  - [NEW] [`src/nodes/research_node.py`](file:///e:/TA/src/nodes/research_node.py)
+  - [MODIFY] [`src/nodes/chat.py`](file:///e:/TA/src/nodes/chat.py)
+  - [MODIFY] [`src/core/graph.py`](file:///e:/TA/src/core/graph.py)
+  - [NEW] [`tests/test_conversational_memory.py`](file:///e:/TA/tests/test_conversational_memory.py)
+- **Acceptance Criteria:**
+  - Track multi-turn conversational message threads inside `chat_history` database checkpointer state.
+  - Dynamically evaluate permission approvals using the live LLM, removing all hardcoded confirmation checks from the client.
+  - Route research queries (`RESEARCH` intent) to a new `research_node` that queries the web and caches JSON logs persistently to `docs/research_history.json`.
+  - Synthesize and output the research findings directly within the assistant's conversational replies.
+- **Verification Commands:**
+  - `pytest tests/test_conversational_memory.py -v`
